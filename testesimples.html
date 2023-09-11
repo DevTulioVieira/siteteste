@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desafio Matemático</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        .container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            flex-direction: row;
+        }
+        .score-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-right: 20px;
+        }
+        .score {
+            font-size: 18px;
+            color: black; /* Cor da pontuação */
+        }
+        .timer {
+            font-size: 18px;
+            margin-top: 10px;
+            color: black; /* Cor do tempo */
+        }
+        .box {
+            width: 60px;
+            height: 60px;
+            background-color: lightgray;
+            margin: 0 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+        }
+        .input-box {
+            width: 100px;
+            height: 40px;
+            font-size: 20px;
+            text-align: center;
+        }
+        .btn-verify {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 18px;
+        }
+        .equals-box {
+            width: 60px;
+            height: 60px;
+            background-color: lightgray;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            color: black;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="score-container">
+            <div class="score">Score: <span id="score">0</span></div>
+            <div class="timer">Tempo: <span id="timer">0s</span></div>
+        </div>
+        <div class="box" id="num1"></div>
+        <div class="box" id="operator"></div>
+        <div class="box" id="num2"></div>
+        <div class="equals-box">=</div>
+        <input type="number" id="resultInput" class="input-box" placeholder="Resultado">
+        <button id="verifyButton" class="btn-verify">Verificar</button>
+    </div>
+
+    <script>
+        // Definindo os elementos
+        const num1Element = document.getElementById('num1');
+        const operatorElement = document.getElementById('operator');
+        const num2Element = document.getElementById('num2');
+        const resultInput = document.getElementById('resultInput');
+        const verifyButton = document.getElementById('verifyButton');
+        const equalsBox = document.querySelector('.equals-box');
+        const scoreElement = document.getElementById('score');
+        const timerElement = document.getElementById('timer');
+
+        // Inicializar contador de acertos
+        let acertos = 0;
+
+        // Inicializar contador de tempo
+        let tempo = 0;
+        let tempoInterval;
+
+        // Flag para controlar se o contador de tempo deve ser iniciado
+        let contadorIniciado = false;
+
+        // Função para gerar números aleatórios de 0 a 9
+        function gerarNumeroAleatorio() {
+            return Math.floor(Math.random() * 10);
+        }
+
+        // Função para gerar um operador aleatório (+, -, *)
+        function gerarOperadorAleatorio() {
+            const operadores = ['+', '-', '*'];
+            const indiceAleatorio = Math.floor(Math.random() * operadores.length);
+            return operadores[indiceAleatorio];
+        }
+
+        // Função para gerar uma nova fórmula
+        function gerarNovaFormula() {
+            const num1 = gerarNumeroAleatorio();
+            const num2 = gerarNumeroAleatorio();
+            const operador = gerarOperadorAleatorio();
+
+            num1Element.textContent = num1;
+            operatorElement.textContent = operador;
+            num2Element.textContent = num2;
+
+            // Habilitar a caixa de resultado e o botão de verificar
+            resultInput.disabled = false;
+            verifyButton.disabled = false;
+
+            // Limpar a caixa de resposta e remover a cor verde/vermelha
+            resultInput.value = '';
+            resultInput.style.color = 'black';
+            equalsBox.style.color = 'black';
+
+            // Iniciar o contador de tempo somente se ainda não tiver sido iniciado
+            if (!contadorIniciado) {
+                iniciarContadorTempo();
+                contadorIniciado = true;
+            }
+        }
+
+        // Função para iniciar o contador de tempo
+        function iniciarContadorTempo() {
+            tempoInterval = setInterval(() => {
+                tempo++;
+                timerElement.textContent = `${tempo}s`;
+
+                // Verificar se o tempo atingiu 1 minuto (60 segundos)
+                if (tempo === 60) {
+                    // Parar o contador de tempo
+                    pararContadorTempo();
+
+                    // Exibir o tempo decorrido e a pontuação em azul
+                    timerElement.style.color = 'blue';
+                    scoreElement.style.color = 'blue';
+
+                    // Desabilitar a caixa de resultado e o botão de verificar
+                    resultInput.disabled = true;
+                    verifyButton.disabled = true;
+                }
+            }, 1000);
+        }
+
+        // Função para parar o contador de tempo
+        function pararContadorTempo() {
+            clearInterval(tempoInterval);
+        }
+
+        // Função para verificar o resultado
+        function verificarResultado() {
+            const resultadoUsuario = parseFloat(resultInput.value);
+            const resultadoCalculado = calcularResultado(
+                parseFloat(num1Element.textContent),
+                operatorElement.textContent,
+                parseFloat(num2Element.textContent)
+            );
+
+            if (!isNaN(resultadoUsuario)) {
+                if (resultadoUsuario === resultadoCalculado) {
+                    // Incrementar o contador de acertos e atualizar o elemento de pontuação
+                    acertos++;
+                    scoreElement.textContent = acertos;
+
+                    resultInput.style.color = 'green';
+                } else {
+                    resultInput.style.color = 'red';
+                }
+
+                // Gerar uma nova fórmula automaticamente após o acerto ou erro
+                setTimeout(gerarNovaFormula, 1000);
+            }
+        }
+
+        // Função para calcular o resultado
+        function calcularResultado(num1, operador, num2) {
+            switch (operador) {
+                case '+':
+                    return num1 + num2;
+                case '-':
+                    return num1 - num2;
+                case '*':
+                    return num1 * num2;
+                default:
+                    return 'Operador inválido';
+            }
+        }
+
+        // Associar evento de clique ao botão "Verificar"
+        verifyButton.addEventListener('click', verificarResultado);
+
+        // Permitir que o usuário pressione Enter para verificar
+        resultInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                verificarResultado();
+            }
+        });
+
+        // Gerar a primeira fórmula ao carregar a página
+        gerarNovaFormula();
+    </script>
+</body>
+</html>
